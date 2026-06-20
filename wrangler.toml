@@ -1,0 +1,12 @@
+# ════════════════════════════════════════════════
+#  Konfiguracja Cloudflare Worker (Adamos backend)
+#  Potrzebne TYLKO jeśli używasz Wrangler (CLI).
+#  Jeśli wdrażasz przez stronę cloudflare.com — pomiń ten plik.
+# ════════════════════════════════════════════════
+
+name = "adamos-backend"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# Klucz API ustawiasz osobno, jako sekret (NIE wpisuj go tutaj!):
+#   npx wrangler secret put GEMINI_API_KEY
