@@ -18,7 +18,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#EEF1F
 
 <!-- STRONA DEMO (usuń u klienta) -->
 <div class="demo-bar">Tryb testowy — widget pobiera konfigurację z serwera po siteId</div>
-<header class="demo-header"><div class="demo-logo">EKG</div><div class="demo-tag">strona klienta</div></header>
+<header class="demo-header"><div class="demo-logo">Twoja Firma</div><div class="demo-tag">strona klienta</div></header>
 <main class="demo-main">Tę stronę zastąpi prawdziwa witryna. Czat pojawia się w rogu po pobraniu konfiguracji.</main>
 
 
@@ -60,7 +60,7 @@ html.w-left #w-shell{left:24px;right:auto;}
 .w-head-btn:hover{color:#fff;background:rgba(255,255,255,.14);}
 .w-head-btn:focus-visible{outline:2px solid #fff;outline-offset:1px;}
 .w-head-btn svg{width:18px;height:18px;}
-.w-quick{padding:10px 12px;display:flex;gap:6px;border-bottom:1px solid var(--w-border);flex-shrink:0;background:var(--w-bg-soft);overflow-x:auto;scrollbar-width:none;}
+.w-quick{padding:9px 11px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--w-border);flex-shrink:0;background:var(--w-bg-soft);}
 .w-quick::-webkit-scrollbar{display:none;}
 .w-qbtn{background:#fff;border:1px solid var(--w-border);border-radius:20px;font-size:12px;padding:6px 13px;cursor:pointer;color:var(--w-text);font-family:inherit;white-space:nowrap;transition:all .15s;}
 .w-qbtn:hover{background:var(--w-accent);color:var(--w-brand);border-color:var(--w-accent);font-weight:600;}
@@ -70,7 +70,12 @@ html.w-left #w-shell{left:24px;right:auto;}
 .w-msg{max-width:88%;font-size:13.5px;line-height:1.55;padding:9px 13px;border-radius:16px;animation:wPop .18s ease;word-wrap:break-word;}
 @keyframes wPop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .w-bot{background:var(--w-bot-bubble);color:var(--w-text);border-bottom-left-radius:4px;align-self:flex-start;}
-.w-usr{background:var(--w-brand);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;}
+.w-usr{position:relative;background:var(--w-brand);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;}
+.w-edit{position:absolute;left:-25px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;background:transparent;color:#9aa3b2;cursor:pointer;opacity:0;display:flex;align-items:center;justify-content:center;padding:0;transition:opacity .15s,color .15s;}
+.w-usr:hover .w-edit{opacity:1;}
+.w-edit:hover{color:var(--w-brand);}
+.w-edit svg{width:14px;height:14px;}
+@media(hover:none){.w-edit{opacity:.5;}}
 .w-bot p{margin:0 0 5px;}.w-bot p:last-child{margin:0;}
 .w-bot ul{padding-left:18px;margin:5px 0 2px;}.w-bot li{margin-bottom:3px;}.w-bot strong{font-weight:600;}
 .w-err{align-self:center;text-align:center;font-size:12px;color:#B42318;background:#FEF3F2;border:1px solid #FECDCA;padding:8px 12px;border-radius:12px;max-width:92%;}
@@ -113,14 +118,14 @@ html.w-left #w-shell{left:24px;right:auto;}
       <textarea id="w-ta" rows="1" placeholder="Napisz wiadomość..." aria-label="Treść wiadomości"></textarea>
       <button id="w-send" aria-label="Wyślij wiadomość"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13" stroke="#fff"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff"/></svg></button>
     </div>
-    <div class="w-footer" id="w-footer">hostowane przez EKG SA</div>
+    <div class="w-footer" id="w-footer">powered by Twoja Firma</div>
   </div>
 </div>
 
 <!-- ★ KONFIGURACJA — tylko dwie rzeczy ★ -->
 <script>
 window.WIDGET = {
-  siteId:     "test-firma",                                            // identyfikator firmy (nadaje operator)
+  siteId:     "demo",                                            // identyfikator firmy (nadaje operator)
   backendUrl: "https://projekta.edziopedzio1939.workers.dev",    // Twój worker
 };
 </script>
@@ -154,7 +159,7 @@ window.WIDGET = {
     if((C.position||'right')==='left')document.documentElement.classList.add('w-left');
     $('w-name').textContent=C.botName||'Asystent';
     $('w-status').textContent=C.statusText||'Online';
-    $('w-footer').textContent=C.footerText||'powered by ekg';
+    $('w-footer').textContent=C.footerText||'powered by Twoja Firma';
     if(C.logoUrl){const hl=$('w-head-logo');hl.src=C.logoUrl;hl.style.display='block';const ic=document.querySelector('.w-av-icon');if(ic)ic.style.display='none';}
 
     const qbar=$('w-quick');
@@ -163,7 +168,7 @@ window.WIDGET = {
     if(!qq.length)qbar.style.display='none';
     if(C.aiDisclosure&&String(C.aiDisclosure).trim())addNote();
 
-    try{const raw=store.get(HIST_KEY);if(raw){const s=JSON.parse(raw);if(Array.isArray(s)&&s.length){transcript=s;greeted=true;s.forEach(m=>{msg(m.t,m.r==='user'?'usr':'bot',false);history.push({role:m.r==='user'?'user':'model',parts:[{text:m.t}]});});}}}catch(e){}
+    try{const raw=store.get(HIST_KEY);if(raw){const s=JSON.parse(raw);if(Array.isArray(s)&&s.length){transcript=s;greeted=true;s.forEach((m,i)=>{appendBubble(m.t,m.r==='user'?'usr':'bot',m.r==='user'?i:-1);history.push({role:m.r==='user'?'user':'model',parts:[{text:m.t}]});});}}}catch(e){}
 
     if(C.autoOpen!==false && !((C.autoOpenOnce) && store.get(OPEN_KEY))){
       setTimeout(()=>{if(!open)openWin();if(C.autoOpenOnce)store.set(OPEN_KEY,'1');},(C.autoOpenDelay||0)*1000);
@@ -190,7 +195,10 @@ window.WIDGET = {
       .catch(err=>{typing(false);console.error('[widget]',err);errMsg('Nie udało się połączyć z asystentem. Spróbuj ponownie za chwilę.');})
       .finally(()=>{setBusy(false);$('w-ta').focus();});
   }
-  function msg(text,role,persist){const w=$('w-msgs'),d=document.createElement('div');d.className='w-msg w-'+role;d.innerHTML=role==='bot'?md(text):esc(text);w.appendChild(d);w.scrollTop=w.scrollHeight;if(persist!==false&&(role==='usr'||role==='bot')){transcript.push({r:role==='usr'?'user':'bot',t:text});store.set(HIST_KEY,JSON.stringify(transcript));}}
+  function appendBubble(text,role,editIdx){const w=$('w-msgs'),d=document.createElement('div');d.className='w-msg w-'+role;d.innerHTML=role==='bot'?md(text):esc(text);if(role==='usr'&&editIdx>=0){const e=document.createElement('button');e.className='w-edit';e.type='button';e.title='Edytuj';e.setAttribute('aria-label','Edytuj wiadomość');e.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';e.onclick=()=>editMessage(editIdx);d.appendChild(e);}w.appendChild(d);w.scrollTop=w.scrollHeight;}
+  function msg(text,role,persist){let idx=-1;if(persist!==false&&(role==='usr'||role==='bot')){transcript.push({r:role==='usr'?'user':'bot',t:text});store.set(HIST_KEY,JSON.stringify(transcript));if(role==='usr')idx=transcript.length-1;}appendBubble(text,role,idx);}
+  function editMessage(idx){if(busy)return;const t=(transcript[idx]&&transcript[idx].t)||'';transcript=transcript.slice(0,idx);store.set(HIST_KEY,JSON.stringify(transcript));history=transcript.map(m=>({role:m.r==='user'?'user':'model',parts:[{text:m.t}]}));rerender();const ta=$('w-ta');ta.value=t;ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,96)+'px';ta.focus();}
+  function rerender(){$('w-msgs').innerHTML='';if(C.aiDisclosure&&String(C.aiDisclosure).trim())addNote();appendBubble(C.welcomeMessage||'Cześć! W czym mogę pomóc?','bot',-1);transcript.forEach((m,i)=>appendBubble(m.t,m.r==='user'?'usr':'bot',m.r==='user'?i:-1));}
   function errMsg(text){const w=$('w-msgs'),d=document.createElement('div');d.className='w-err';d.textContent=text;w.appendChild(d);w.scrollTop=w.scrollHeight;}
   function md(t){let s=esc(t);s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');s=s.replace(/^[•\-\*]\s+(.+)$/gm,'<li>$1</li>');s=s.replace(/(<li>[\s\S]*?<\/li>\s*)+/g,m=>'<ul>'+m+'</ul>');return s.split(/\n{2,}/).map(p=>p.indexOf('<ul>')>-1?p:'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');}
   function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
