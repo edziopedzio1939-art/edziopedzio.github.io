@@ -118,15 +118,16 @@ html.w-left #w-shell{left:24px;right:auto;}
       <textarea id="w-ta" rows="1" placeholder="Napisz wiadomość..." aria-label="Treść wiadomości"></textarea>
       <button id="w-send" aria-label="Wyślij wiadomość"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13" stroke="#fff"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff"/></svg></button>
     </div>
-    <div class="w-footer" id="w-footer">powered by EKG</div>
+    <div class="w-footer" id="w-footer">powered by Twoja Firma</div>
   </div>
 </div>
 
 <!-- ★ KONFIGURACJA — tylko dwie rzeczy ★ -->
 <script>
 window.WIDGET = {
-  siteId:     "test-firma",                                            // identyfikator firmy (nadaje operator)
+  siteId:     "demo",                                            // identyfikator firmy (nadaje operator)
   backendUrl: "https://projekta.edziopedzio1939.workers.dev",    // Twój worker
+  footer:     "powered by Twoja Firma",                          // ← ZMIEŃ TU napis w stopce
 };
 </script>
 
@@ -159,7 +160,7 @@ window.WIDGET = {
     if((C.position||'right')==='left')document.documentElement.classList.add('w-left');
     $('w-name').textContent=C.botName||'Asystent';
     $('w-status').textContent=C.statusText||'Online';
-    $('w-footer').textContent=C.footerText||'powered by Twoja Firma';
+    $('w-footer').textContent=W.footer||C.footerText||'powered by Twoja Firma';
     if(C.logoUrl){const hl=$('w-head-logo');hl.src=C.logoUrl;hl.style.display='block';const ic=document.querySelector('.w-av-icon');if(ic)ic.style.display='none';}
 
     const qbar=$('w-quick');
