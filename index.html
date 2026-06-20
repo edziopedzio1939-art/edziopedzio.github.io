@@ -3,499 +3,203 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Adamos v3 — demo restauracji</title>
+<title>Widget — tryb połączony</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#F2F0EC;color:#1a1a1a;min-height:100vh;}
-
-/* ═══ STRONA DEMO (sama strona restauracji — możesz ją usunąć) ═══ */
-.demo-bar{background:#1A1A1A;color:#fff;text-align:center;padding:9px 14px;font-size:12.5px;}
-.demo-bar a{color:#E67E22;text-decoration:none;font-weight:600;}
-.site-header{text-align:center;padding:56px 24px 36px;border-bottom:1px solid #E0DDD5;background:#fff;}
-.site-logo{font-size:34px;font-weight:700;letter-spacing:-1px;}
-.site-tagline{font-size:14px;color:#888;margin-top:6px;}
-.site-main{max-width:880px;margin:0 auto;padding:36px 24px 160px;}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-.card{background:#fff;border-radius:12px;padding:22px;border:1px solid #E8E5DE;}
-.card h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#999;margin-bottom:10px;}
-.card p{font-size:14px;line-height:1.65;color:#444;}
-@media(max-width:580px){.cards{grid-template-columns:1fr;}}
-
-
-/* ═══════════════════════════════════════════════════════════
-   ADAMOS WIDGET — STYL
-   ═══════════════════════════════════════════════════════════ */
-:root{
-  /* ╔═══════════════════════════════════════════════╗
-     ║  KOLORY — edytuj TYLKO tutaj!                 ║
-     ║  Zmień --ad-color na kolor marki restauracji. ║
-     ╚═══════════════════════════════════════════════╝ */
-  --ad-color:       #E67E22;  /* GŁÓWNY kolor: przycisk, nagłówek, bąbelki klienta */
-  --ad-accent:      #2C3E50;  /* akcent: szybkie pytania po najechaniu             */
-  --ad-bg:          #FFFFFF;  /* tło okna czatu                                    */
-  --ad-bg-soft:     #F9F7F4;  /* tło pola pisania i szybkich pytań                 */
-  --ad-bot-bubble:  #F0EDE8;  /* tło bąbelka bota                                  */
-  --ad-text:        #1A1A1A;  /* kolor tekstu                                      */
-  --ad-border:      #E8E4DE;  /* kolor obramowań                                   */
-  --ad-radius:      20px;     /* zaokrąglenie rogów okna                           */
-  --ad-fab:         62px;     /* średnica przycisku otwierającego                  */
-}
-
-#ad-fab,#ad-win,#ad-win *{box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;}
-
-/* ── Przycisk otwierający (FAB) ── */
-#ad-fab{
-  position:fixed;bottom:28px;right:28px;
-  width:var(--ad-fab);height:var(--ad-fab);
-  border-radius:50%;background:var(--ad-color);
-  border:none;cursor:pointer;padding:0;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 24px rgba(0,0,0,.24);
-  z-index:99999;transition:transform .2s,filter .2s;
-}
-#ad-fab:hover{filter:brightness(1.1);transform:scale(1.06);}
-#ad-fab-logo{width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;}
-#ad-fab-icon,#ad-fab-x{display:flex;align-items:center;justify-content:center;pointer-events:none;}
-#ad-fab-icon svg{width:28px;height:28px;}
-#ad-fab-x{display:none;}
-#ad-fab-x svg{width:23px;height:23px;}
-#ad-dot{
-  position:absolute;top:0;right:0;
-  width:15px;height:15px;background:#E74C3C;
-  border-radius:50%;border:2px solid var(--ad-color);display:none;
-}
-
-/* ── Okno czatu ── */
-#ad-win{
-  position:fixed;bottom:102px;right:28px;
-  width:376px;max-width:calc(100vw - 36px);
-  height:564px;max-height:calc(100vh - 124px);
-  background:var(--ad-bg);border-radius:var(--ad-radius);
-  box-shadow:0 12px 48px rgba(0,0,0,.18);
-  display:flex;flex-direction:column;
-  z-index:99998;overflow:hidden;
-  transform:scale(.9) translateY(16px);opacity:0;pointer-events:none;
-  transition:transform .24s cubic-bezier(.34,1.56,.64,1),opacity .18s ease;
-}
-#ad-win.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
-
-/* ── Nagłówek ── */
-.ad-head{background:var(--ad-color);padding:14px 16px;display:flex;align-items:center;gap:11px;flex-shrink:0;}
-.ad-head-av{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.2);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ad-head-av img{width:100%;height:100%;object-fit:cover;display:none;}
-.ad-head-av svg{width:21px;height:21px;stroke:#fff;}
-.ad-head-info{flex:1;min-width:0;}
-.ad-head-name{font-size:15px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ad-head-status{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;display:flex;align-items:center;gap:5px;}
-.ad-sdot{width:7px;height:7px;border-radius:50%;background:#2ECC71;flex-shrink:0;}
-.ad-head-close{background:none;border:none;cursor:pointer;padding:5px;border-radius:6px;color:rgba(255,255,255,.55);display:flex;transition:color .15s;flex-shrink:0;}
-.ad-head-close:hover{color:#fff;}
-.ad-head-close svg{width:18px;height:18px;}
-
-/* ── Szybkie pytania ── */
-.ad-quick{padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--ad-border);flex-shrink:0;background:var(--ad-bg-soft);}
-.ad-qbtn{background:#fff;border:1px solid var(--ad-border);border-radius:20px;font-size:12px;padding:5px 12px;cursor:pointer;color:var(--ad-text);font-family:inherit;white-space:nowrap;transition:all .15s;}
-.ad-qbtn:hover{background:var(--ad-accent);color:#fff;border-color:var(--ad-accent);}
-
-/* ── Wiadomości ── */
-.ad-msgs{flex:1;overflow-y:auto;padding:14px 13px 8px;display:flex;flex-direction:column;gap:9px;scroll-behavior:smooth;}
-.ad-msgs::-webkit-scrollbar{width:3px;}
-.ad-msgs::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px;}
-.ad-msg{max-width:88%;font-size:13.5px;line-height:1.55;padding:9px 13px;border-radius:16px;animation:adPop .18s ease;}
-@keyframes adPop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.ad-bot{background:var(--ad-bot-bubble);color:var(--ad-text);border-bottom-left-radius:4px;align-self:flex-start;}
-.ad-usr{background:var(--ad-color);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;}
-.ad-bot p{margin:0 0 5px;}.ad-bot p:last-child{margin:0;}
-.ad-bot ul{padding-left:17px;margin:5px 0 2px;}
-.ad-bot li{margin-bottom:3px;}
-.ad-bot strong{font-weight:600;}
-
-/* ── Typing ── */
-.ad-typing{background:var(--ad-bot-bubble);border-radius:16px;border-bottom-left-radius:4px;padding:12px 15px;align-self:flex-start;display:flex;gap:4px;}
-.ad-typing span{width:7px;height:7px;border-radius:50%;background:#bbb;animation:adDot 1.2s infinite;}
-.ad-typing span:nth-child(2){animation-delay:.2s;}
-.ad-typing span:nth-child(3){animation-delay:.4s;}
-@keyframes adDot{0%,80%,100%{transform:scale(.65);opacity:.4}40%{transform:scale(1);opacity:1}}
-
-/* ── Pole pisania ── */
-.ad-inputbar{padding:10px 12px 13px;border-top:1px solid var(--ad-border);display:flex;gap:7px;flex-shrink:0;background:var(--ad-bg);}
-#ad-ta{flex:1;border:1.5px solid var(--ad-border);border-radius:11px;padding:9px 12px;font-size:13.5px;font-family:inherit;color:var(--ad-text);background:var(--ad-bg-soft);outline:none;resize:none;min-height:40px;max-height:96px;line-height:1.4;transition:border-color .15s;}
-#ad-ta:focus{border-color:var(--ad-color);background:#fff;}
-#ad-ta::placeholder{color:#C0BDB8;}
-#ad-send{width:40px;height:40px;border-radius:11px;flex-shrink:0;background:var(--ad-color);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:filter .15s,transform .1s;}
-#ad-send:hover{filter:brightness(1.12);}
-#ad-send:active{transform:scale(.93);}
-#ad-send:disabled{opacity:.35;cursor:not-allowed;}
-#ad-send svg{width:17px;height:17px;}
-.ad-footer{text-align:center;font-size:10px;color:#bbb;padding:0 12px 8px;}
-
-@media(max-width:420px){
-  #ad-win{right:10px;bottom:90px;width:calc(100vw - 20px);}
-  #ad-fab{right:14px;bottom:18px;}
-}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#EEF1F6;color:#15181D;min-height:100vh;}
+.demo-bar{background:#15181D;color:#fff;text-align:center;padding:9px 14px;font-size:12.5px;}
+.demo-header{text-align:center;padding:56px 24px 36px;border-bottom:1px solid #E3E6EB;background:#fff;}
+.demo-logo{font-size:32px;font-weight:700;letter-spacing:-1px;}
+.demo-tag{font-size:14px;color:#8A9099;margin-top:6px;}
+.demo-main{max-width:880px;margin:0 auto;padding:36px 24px 160px;color:#4A5159;font-size:14px;}
 </style>
 </head>
 <body>
 
-<!-- ════════ STRONA DEMO (możesz usunąć całą tę sekcję) ════════ -->
-<div class="demo-bar">🛠 Tryb testowy Adamos — kliknij ikonę w prawym dolnym rogu aby porozmawiać z botem</div>
-
-<header class="site-header">
-  <div class="site-logo">Nazwa Restauracji</div>
-  <div class="site-tagline">ul. Przykładowa 1 · Twoje Miasto · +48 000 000 000</div>
-</header>
-
-<main class="site-main">
-  <div class="cards">
-    <div class="card"><h3>Godziny otwarcia</h3><p>Pon – Pt: 12:00 – 22:00<br>Sob – Niedz: 12:00 – 23:00<br>Kuchnia zamykana 30 min wcześniej</p></div>
-    <div class="card"><h3>Kontakt</h3><p>ul. Przykładowa 1<br>00-000 Twoje Miasto<br>Tel: +48 000 000 000</p></div>
-    <div class="card"><h3>Menu – dania główne</h3><p>Danie 1 – 45 zł<br>Danie 2 – 52 zł<br>Danie wegetariańskie – 36 zł</p></div>
-    <div class="card"><h3>Rezerwacje</h3><p>Do 6 osób online przez czat.<br>Grupy 7+ – prosimy o telefon.<br>Ostatnia rezerwacja: 21:30</p></div>
-  </div>
-</main>
+<!-- STRONA DEMO (usuń u klienta) -->
+<div class="demo-bar">Tryb testowy — widget pobiera konfigurację z serwera po siteId</div>
+<header class="demo-header"><div class="demo-logo">Twoja Firma</div><div class="demo-tag">strona klienta</div></header>
+<main class="demo-main">Tę stronę zastąpi prawdziwa witryna. Czat pojawia się w rogu po pobraniu konfiguracji.</main>
 
 
-<!-- ════════════════════════════════════════════════════════════
-     ADAMOS WIDGET — HTML
-     (to wklejasz na stronę klienta — od tego komentarza w dół)
-     ════════════════════════════════════════════════════════════ -->
-<button id="ad-fab" onclick="AD.toggle()" aria-label="Otwórz czat">
-  <img id="ad-fab-logo" src="" alt="logo">
-  <span id="ad-fab-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-    </svg>
-  </span>
-  <span id="ad-fab-x">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
-      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-    </svg>
-  </span>
-  <div id="ad-dot"></div>
-</button>
+<!-- ╔════════════ WIDGET — POCZĄTEK (wklej u klienta) ════════════╗ -->
+<style>
+:root{
+  --w-brand:#1E3A8A; --w-brand-rgb:30,58,138;
+  --w-accent:#D4AF37; --w-accent-rgb:212,175,55;
+  --w-bg:#FFFFFF; --w-bg-soft:#F1F3F8; --w-bot-bubble:#EDEFF4;
+  --w-text:#16203A; --w-border:#DCE2EC;
+}
+#w-shell,#w-shell *{box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;}
+#w-shell{position:fixed;bottom:24px;right:24px;width:66px;height:66px;border-radius:50%;background:var(--w-bg);overflow:hidden;z-index:2147483000;transition:width .44s cubic-bezier(.34,1.28,.5,1),height .44s cubic-bezier(.34,1.28,.5,1),border-radius .4s ease,box-shadow .4s ease;}
+html.w-left #w-shell{left:24px;right:auto;}
+#w-shell.collapsed{box-shadow:0 6px 20px rgba(0,0,0,.18);animation:wGlow 3.8s ease-in-out infinite;}
+#w-shell.collapsed.thinking{animation-duration:1.15s;}
+#w-shell.expanded{width:376px;height:560px;border-radius:22px;max-width:calc(100vw - 32px);max-height:calc(100vh - 110px);box-shadow:0 16px 50px rgba(15,23,42,.22);}
+@keyframes wGlow{0%,100%{box-shadow:0 6px 20px rgba(0,0,0,.18),0 0 0 0 rgba(var(--w-brand-rgb),0);}50%{box-shadow:0 8px 26px rgba(0,0,0,.20),0 0 22px 3px rgba(var(--w-brand-rgb),.40);}}
+#w-orb-btn{position:absolute;inset:0;background:transparent;border:none;cursor:pointer;z-index:5;border-radius:inherit;}
+#w-orb-btn:focus-visible{outline:3px solid rgba(var(--w-brand-rgb),.6);outline-offset:3px;}
+#w-shell.expanded #w-orb-btn{display:none;}
+.w-fab-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--w-brand);transition:opacity .28s ease,transform .32s ease;}
+.w-fab-face svg{width:27px;height:27px;}
+#w-shell.collapsed .w-fab-face{opacity:1;transform:none;}
+#w-shell.expanded .w-fab-face{opacity:0;transform:scale(1.3);}
+#w-panel{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+#w-shell.expanded #w-panel{opacity:1;pointer-events:auto;transition:opacity .26s ease .15s;}
+.w-head{background:var(--w-brand);padding:13px 14px;display:flex;align-items:center;gap:11px;flex-shrink:0;}
+.w-head-av{position:relative;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;animation:wAvPulse 2.6s ease-in-out infinite;}
+.w-head-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;}
+.w-av-icon{display:flex;}.w-av-icon svg{width:20px;height:20px;}
+#w-shell.thinking .w-head-av{animation-duration:.9s;}
+@keyframes wAvPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0);}50%{box-shadow:0 0 0 5px rgba(255,255,255,.5);}}
+.w-head-info{flex:1;min-width:0;}
+.w-head-name{font-size:15px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.w-head-status{font-size:11px;color:rgba(255,255,255,.78);margin-top:2px;display:flex;align-items:center;gap:5px;}
+.w-sdot{width:7px;height:7px;border-radius:50%;background:var(--w-accent);flex-shrink:0;}
+.w-head-btn{background:none;border:none;cursor:pointer;padding:5px;border-radius:7px;color:rgba(255,255,255,.62);display:flex;transition:color .15s,background .15s;flex-shrink:0;}
+.w-head-btn:hover{color:#fff;background:rgba(255,255,255,.14);}
+.w-head-btn:focus-visible{outline:2px solid #fff;outline-offset:1px;}
+.w-head-btn svg{width:18px;height:18px;}
+.w-quick{padding:10px 12px;display:flex;gap:6px;border-bottom:1px solid var(--w-border);flex-shrink:0;background:var(--w-bg-soft);overflow-x:auto;scrollbar-width:none;}
+.w-quick::-webkit-scrollbar{display:none;}
+.w-qbtn{background:#fff;border:1px solid var(--w-border);border-radius:20px;font-size:12px;padding:6px 13px;cursor:pointer;color:var(--w-text);font-family:inherit;white-space:nowrap;transition:all .15s;}
+.w-qbtn:hover{background:var(--w-accent);color:var(--w-brand);border-color:var(--w-accent);font-weight:600;}
+.w-msgs{flex:1;overflow-y:auto;padding:14px 13px 8px;display:flex;flex-direction:column;gap:9px;scroll-behavior:smooth;}
+.w-msgs::-webkit-scrollbar{width:3px;}.w-msgs::-webkit-scrollbar-thumb{background:#cdd4df;border-radius:3px;}
+.w-note{align-self:center;text-align:center;font-size:10.5px;color:#8A93A5;background:rgba(0,0,0,.035);border:1px solid var(--w-border);padding:5px 11px;border-radius:10px;margin:2px auto;max-width:94%;}
+.w-msg{max-width:88%;font-size:13.5px;line-height:1.55;padding:9px 13px;border-radius:16px;animation:wPop .18s ease;word-wrap:break-word;}
+@keyframes wPop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.w-bot{background:var(--w-bot-bubble);color:var(--w-text);border-bottom-left-radius:4px;align-self:flex-start;}
+.w-usr{background:var(--w-brand);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;}
+.w-bot p{margin:0 0 5px;}.w-bot p:last-child{margin:0;}
+.w-bot ul{padding-left:18px;margin:5px 0 2px;}.w-bot li{margin-bottom:3px;}.w-bot strong{font-weight:600;}
+.w-err{align-self:center;text-align:center;font-size:12px;color:#B42318;background:#FEF3F2;border:1px solid #FECDCA;padding:8px 12px;border-radius:12px;max-width:92%;}
+.w-typing{background:var(--w-bot-bubble);border-radius:16px;border-bottom-left-radius:4px;padding:12px 15px;align-self:flex-start;display:flex;gap:4px;}
+.w-typing span{width:7px;height:7px;border-radius:50%;background:#b6bcc6;animation:wDot 1.2s infinite;}
+.w-typing span:nth-child(2){animation-delay:.2s;}.w-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes wDot{0%,80%,100%{transform:scale(.65);opacity:.4}40%{transform:scale(1);opacity:1}}
+.w-inputbar{padding:10px 12px 12px;border-top:1px solid var(--w-border);display:flex;gap:7px;flex-shrink:0;background:var(--w-bg);}
+#w-ta{flex:1;border:1.5px solid var(--w-border);border-radius:11px;padding:9px 12px;font-size:13.5px;font-family:inherit;color:var(--w-text);background:var(--w-bg-soft);outline:none;resize:none;min-height:40px;max-height:96px;line-height:1.4;transition:border-color .15s,background .15s;}
+#w-ta:focus{border-color:var(--w-brand);background:#fff;}#w-ta::placeholder{color:#AEB4BD;}
+#w-send{width:40px;height:40px;border-radius:11px;flex-shrink:0;background:var(--w-brand);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:filter .15s,transform .1s;}
+#w-send:hover{filter:brightness(1.12);}#w-send:active{transform:scale(.93);}
+#w-send:disabled{opacity:.35;cursor:not-allowed;}
+#w-send:focus-visible{outline:2px solid var(--w-accent);outline-offset:2px;}
+#w-send svg{width:17px;height:17px;}
+.w-footer{text-align:center;font-size:10px;color:#b4b9c2;padding:0 12px 8px;}
+@media(max-width:430px){#w-shell{bottom:16px;right:14px;}html.w-left #w-shell{left:14px;}#w-shell.expanded{width:100vw;height:90vh;right:0;left:0;bottom:0;border-radius:16px 16px 0 0;max-width:100vw;max-height:90vh;}}
+@media(prefers-reduced-motion:reduce){#w-shell,.w-fab-face,#w-panel,.w-msg,.w-head-av{transition:none!important;animation:none!important;}.w-typing span{animation:none;opacity:.6;}}
+</style>
 
-<div id="ad-win" role="dialog" aria-modal="true" aria-label="Czat Adamos">
-  <div class="ad-head">
-    <div class="ad-head-av">
-      <img id="ad-head-logo" src="" alt="logo">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-      </svg>
+<div id="w-shell" class="collapsed">
+  <button id="w-orb-btn" aria-label="Otwórz czat"></button>
+  <div class="w-fab-face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+  <div id="w-panel" role="dialog" aria-label="Okno czatu">
+    <div class="w-head">
+      <div class="w-head-av">
+        <img id="w-head-logo" src="" alt="">
+        <span class="w-av-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      </div>
+      <div class="w-head-info">
+        <div class="w-head-name" id="w-name">Asystent</div>
+        <div class="w-head-status"><span class="w-sdot"></span><span id="w-status">Online</span></div>
+      </div>
+      <button class="w-head-btn" id="w-reset" title="Nowa rozmowa" aria-label="Rozpocznij nową rozmowę"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+      <button class="w-head-btn" id="w-close" title="Zamknij" aria-label="Zamknij czat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
-    <div class="ad-head-info">
-      <div class="ad-head-name" id="ad-name">Adamos</div>
-      <div class="ad-head-status"><span class="ad-sdot"></span><span id="ad-status">Online · odpowiada natychmiast</span></div>
+    <div class="w-quick" id="w-quick"></div>
+    <div class="w-msgs" id="w-msgs"></div>
+    <div class="w-inputbar">
+      <textarea id="w-ta" rows="1" placeholder="Napisz wiadomość..." aria-label="Treść wiadomości"></textarea>
+      <button id="w-send" aria-label="Wyślij wiadomość"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13" stroke="#fff"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff"/></svg></button>
     </div>
-    <button class="ad-head-close" onclick="AD.toggle()" aria-label="Zamknij">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
+    <div class="w-footer" id="w-footer">powered by Twoja Firma</div>
   </div>
-
-  <div class="ad-quick" id="ad-quick"></div>
-  <div class="ad-msgs"  id="ad-msgs"></div>
-
-  <div class="ad-inputbar">
-    <textarea id="ad-ta" rows="1" placeholder="Napisz wiadomość..."
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();AD.send();}"
-      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,96)+'px'"
-      aria-label="Wiadomość"></textarea>
-    <button id="ad-send" onclick="AD.send()" aria-label="Wyślij">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13" stroke="white"/>
-        <polygon points="22 2 15 22 11 13 2 9 22 2" fill="white"/>
-      </svg>
-    </button>
-  </div>
-  <div class="ad-footer">powered by <strong>EKG.SA</strong></div>
 </div>
 
-
-<!-- ════════════════════════════════════════════════════════════
-     ★★★  KONFIGURACJA  ★★★
-     To JEDYNA sekcja którą edytujesz pod każdą restaurację.
-     ════════════════════════════════════════════════════════════ -->
+<!-- ★ KONFIGURACJA — tylko dwie rzeczy ★ -->
 <script>
-window.ADAMOS = {
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     1. ADRES BACKENDU  ← NAJWAŻNIEJSZE
-     Tu wklejasz adres swojego Workera z Cloudflare.
-     Wygląda tak: https://adamos.twojanazwa.workers.dev
-
-     • Do testów lokalnych z Wrangler: http://localhost:8787
-     • Po wdrożeniu na Cloudflare: adres .workers.dev
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  backendUrl: "https://projekta.edziopedzio1939.workers.dev",
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     2. LOGO RESTAURACJI
-     URL do obrazka (PNG/JPG/SVG). Pokaże się na przycisku i w nagłówku.
-     Zostaw "" (puste) aby pokazać domyślną ikonę czatu.
-
-     Możesz użyć:
-     • pełnego adresu:  "https://restauracja.pl/logo.png"
-     • pliku obok strony: "logo.png"
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  logo: "",
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     3. KOLOR MARKI
-     (możesz też zmienić w sekcji STYL → :root → --ad-color)
-     Przykłady: "#E67E22" pomarańcz · "#C0392B" czerwień ·
-     "#27AE60" zieleń · "#1A3A5C" granat · "#6B4226" kawowy
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  color: "#E67E22",
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     4. NAZWA I STATUS BOTA
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  botName:    "somada",
-  statusText: "Asystent restauracji · odpowiada natychmiast",
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     5. AUTO-OTWIERANIE
-     autoOpen: true  = czat otwiera się sam po wejściu na stronę
-     autoOpen: false = otwiera się dopiero po kliknięciu
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  autoOpen:      true,
-  autoOpenDelay: 3,      // opóźnienie w sekundach
-  autoOpenOnce:  true,   // true = tylko raz na sesję (nie irytuje)
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     6. SZYBKIE PYTANIA (max 5 przycisków)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  quickQuestions: [
-    { label: "🕐 Godziny",    text: "Jakie są godziny otwarcia?" },
-    { label: "🍽️ Menu",       text: "Jakie dania macie w menu i w jakiej cenie?" },
-    { label: "📅 Rezerwacja", text: "Chcę zarezerwować stolik." },
-    { label: "📍 Dojazd",     text: "Jak do was dojechać?" },
-    { label: "🅿️ Parking",    text: "Czy jest parking?" },
-  ],
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     7. WIADOMOŚĆ POWITALNA
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  welcome: `Cześć! 👋 Jestem **Adamos**, asystent restauracji **[NAZWA RESTAURACJI]**.
-
-Pomogę Ci z rezerwacją, menu, godzinami i dojazdem. W czym mogę pomóc?`,
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     8. INSTRUKCJA DLA BOTA (system prompt)
-     ★★★ NAJWAŻNIEJSZA TREŚĆ — tu wpisujesz WSZYSTKO o restauracji ★★★
-     Im dokładniej wypełnisz, tym lepiej bot odpowiada.
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  systemPrompt: `Jesteś Adamos — asystentem restauracji "[NAZWA RESTAURACJI]".
-
-ZASADY:
-- Odpowiadaj wyłącznie po polsku
-- Bądź ciepły i konkretny, maksymalnie 4-5 zdań lub krótka lista
-- Jeśli nie znasz odpowiedzi → zaproponuj kontakt telefoniczny
-- Nigdy nie zmyślaj cen, dań ani godzin
-- Przy rezerwacji zbieraj kolejno: imię → data → godzina → liczba osób → numer telefonu
-
-STYL PISANIA:
-[Opisz jak bot ma mówić, np.:
- "Mów ciepło i familiarnie, używaj emoji 🍕"  albo
- "Mów elegancko, formy Pani/Pan, bez emoji"  albo
- "Mów energetycznie, dużo wykrzykników!"]
-
-━━━ DANE RESTAURACJI ━━━
-NAZWA:   U adamosa
-ADRES:   Brzozowa 11 bełchatów
-TELEFON: 666
-EMAIL:   edziopedzio@gmial.com
-
-GODZINY OTWARCIA:
-Pon-Pt:   12:00 - 22:00
-Sob-Nd:   12:00 - 23:00
-Uwagi:    Kuchnia zamyka się 30 min wcześniej
-
-━━━ MENU ━━━
-PRZYSTAWKI:
-- Zupa – 2 zł – Zupa z elfów i cebuli
-- Chleb – 1000 zł
-
-ZUPY:
-- Zupa z bobra – 3 zł
-
-DANIA GŁÓWNE:
-- [Danie] – [cena] zł – [opis, alergeny]
-- [Danie wegetariańskie] – [cena] zł
-- [Danie bezglutenowe] – [cena] zł
-
-DESERY:
-- [Deser] – [cena] zł
-
-NAPOJE:
-- Woda 0,33l – [cena] zł
-- Kawa espresso – [cena] zł
-- [Inne napoje]
-
-━━━ REZERWACJE ━━━
-Max osób online: [np. 6]
-Grupy 7+: [np. prosimy o telefon]
-Ostatnia rezerwacja: [godzina]
-Imprezy prywatne: [tak/nie, szczegóły]
-
-━━━ DOJAZD I PARKING ━━━
-[Opis dojazdu]
-Parking: [bezpłatny/płatny, ile miejsc]
-Komunikacja miejska: [przystanek, linie]
-
-━━━ DODATKOWE INFORMACJE ━━━
-Karty płatnicze: [tak/nie]
-BLIK: [tak/nie]
-Menu dla dzieci: [tak/nie]
-Zamówienia na wynos: [tak/nie, jak]
-Dostawa: [tak/nie, przez co np. Glovo]
-WiFi: [tak/nie, hasło]
-Dostęp dla niepełnosprawnych: [tak/nie]`,
+window.WIDGET = {
+  siteId:     "test-firma",                                            // identyfikator firmy (nadaje operator)
+  backendUrl: "https://projekta.edziopedzio1939.workers.dev",    // Twój worker
 };
 </script>
 
-
-<!-- ════════════════════════════════════════════════════════════
-     SILNIK ADAMOS — NIE ZMIENIAJ TEGO KODU
-     ════════════════════════════════════════════════════════════ -->
+<!-- SILNIK — NIE EDYTUJ -->
 <script>
 (function(){
-  const C = window.ADAMOS;
-  let open=false, busy=false, greeted=false, history=[];
+  const W = window.WIDGET || {};
+  const BASE = (W.backendUrl||'').replace(/\/+$/,'');
+  const SITE = W.siteId||'';
+  let open=false, busy=false, greeted=false, history=[], transcript=[], C={};
+  const $ = id => document.getElementById(id);
+  const reduceMotion = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const shell=$('w-shell');
+  const HIST_KEY="w_hist_"+SITE, OPEN_KEY="w_autoopen_"+SITE;
+  const store={get(k){try{return sessionStorage.getItem(k);}catch(e){return null;}},set(k,v){try{sessionStorage.setItem(k,v);}catch(e){}},del(k){try{sessionStorage.removeItem(k);}catch(e){}}};
+  function hexToRgb(h){if(!h)return null;h=String(h).replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');if(h.length!==6)return null;const n=parseInt(h,16);if(isNaN(n))return null;return [(n>>16)&255,(n>>8)&255,n&255];}
 
-  /* Ustaw kolor */
-  document.documentElement.style.setProperty('--ad-color', C.color || '#E67E22');
+  // 1) pobierz publiczny wyglad, potem zbuduj UI
+  fetch(BASE+'/config?site='+encodeURIComponent(SITE))
+    .then(r=>r.json()).then(d=>{ C=(d&&d.config)||{}; })
+    .catch(()=>{ C={}; })
+    .finally(init);
 
-  /* Ustaw nazwę i status */
-  document.getElementById('ad-name').textContent   = C.botName    || 'Adamos';
-  document.getElementById('ad-status').textContent = C.statusText || 'Online';
+  function init(){
+    const root=document.documentElement.style;
+    if(C.brandColor)root.setProperty('--w-brand',C.brandColor);
+    if(C.accentColor)root.setProperty('--w-accent',C.accentColor);
+    const br=hexToRgb(C.brandColor); if(br)root.setProperty('--w-brand-rgb',br.join(','));
+    const ar=hexToRgb(C.accentColor); if(ar)root.setProperty('--w-accent-rgb',ar.join(','));
+    if((C.position||'right')==='left')document.documentElement.classList.add('w-left');
+    $('w-name').textContent=C.botName||'Asystent';
+    $('w-status').textContent=C.statusText||'Online';
+    $('w-footer').textContent=C.footerText||'powered by Twoja Firma';
+    if(C.logoUrl){const hl=$('w-head-logo');hl.src=C.logoUrl;hl.style.display='block';const ic=document.querySelector('.w-av-icon');if(ic)ic.style.display='none';}
 
-  /* Logo (jeśli podane) */
-  if(C.logo){
-    const fl = document.getElementById('ad-fab-logo');
-    fl.src = C.logo; fl.style.display='block';
-    document.getElementById('ad-fab-icon').style.display='none';
-    const hl = document.getElementById('ad-head-logo');
-    hl.src = C.logo; hl.style.display='block';
-    hl.nextElementSibling.style.display='none';
-  }
+    const qbar=$('w-quick');
+    const qq=(C.quickQuestions||[]).slice(0,5);
+    qq.forEach(q=>{const t=typeof q==='string'?q:(q.text||q.label||'');const b=document.createElement('button');b.className='w-qbtn';b.type='button';b.textContent=t;b.onclick=()=>send(t);qbar.appendChild(b);});
+    if(!qq.length)qbar.style.display='none';
+    if(C.aiDisclosure&&String(C.aiDisclosure).trim())addNote();
 
-  /* Szybkie pytania */
-  const qbar = document.getElementById('ad-quick');
-  (C.quickQuestions||[]).slice(0,5).forEach(q=>{
-    const b=document.createElement('button');
-    b.className='ad-qbtn'; b.textContent=q.label;
-    b.onclick=()=>{ qbar.style.display='none'; _send(q.text); };
-    qbar.appendChild(b);
-  });
-  if(!(C.quickQuestions||[]).length) qbar.style.display='none';
+    try{const raw=store.get(HIST_KEY);if(raw){const s=JSON.parse(raw);if(Array.isArray(s)&&s.length){transcript=s;greeted=true;s.forEach(m=>{msg(m.t,m.r==='user'?'usr':'bot',false);history.push({role:m.r==='user'?'user':'model',parts:[{text:m.t}]});});}}}catch(e){}
 
-  /* Auto-otwieranie */
-  if(C.autoOpen){
-    const KEY='adamos_sess';
-    if(!(C.autoOpenOnce && sessionStorage.getItem(KEY))){
-      setTimeout(()=>{
-        if(!open) AD.toggle();
-        if(C.autoOpenOnce) sessionStorage.setItem(KEY,'1');
-      }, (C.autoOpenDelay||0)*1000);
+    if(C.autoOpen!==false && !((C.autoOpenOnce) && store.get(OPEN_KEY))){
+      setTimeout(()=>{if(!open)openWin();if(C.autoOpenOnce)store.set(OPEN_KEY,'1');},(C.autoOpenDelay||0)*1000);
     }
+
+    $('w-orb-btn').addEventListener('click',openWin);
+    $('w-close').addEventListener('click',closeWin);
+    $('w-reset').addEventListener('click',reset);
+    $('w-send').addEventListener('click',()=>send($('w-ta').value));
+    $('w-ta').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send($('w-ta').value);}});
+    $('w-ta').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,96)+'px';});
+    addEventListener('keydown',e=>{if(e.key==='Escape'&&open)closeWin();});
   }
 
-  /* ══ PUBLICZNE API ══ */
-  window.AD = {
-    toggle(){
-      open=!open;
-      document.getElementById('ad-win').classList.toggle('open',open);
-      document.getElementById('ad-dot').style.display='none';
-      if(C.logo){
-        document.getElementById('ad-fab-logo').style.display = open?'none':'block';
-      }else{
-        document.getElementById('ad-fab-icon').style.display = open?'none':'flex';
-      }
-      document.getElementById('ad-fab-x').style.display = open?'flex':'none';
-      if(open&&!greeted){ greeted=true; setTimeout(_greet,320); }
-      if(open) setTimeout(()=>document.getElementById('ad-ta').focus(),360);
-    },
-    send(){ _send(document.getElementById('ad-ta').value.trim()); }
-  };
-
-  /* Wyślij wiadomość */
-  function _send(text){
-    if(!text||busy) return;
-    const ta=document.getElementById('ad-ta');
-    ta.value=''; ta.style.height='auto';
-    _msg(text,'usr');
-    history.push({ role:'user', parts:[{text}] });
-    _typing(true); _busy(true);
-
-    _callBackend()
-      .then(reply=>{
-        history.push({ role:'model', parts:[{text:reply}] });
-        _typing(false); _msg(reply,'bot');
-      })
-      .catch(err=>{
-        _typing(false);
-        console.error('[Adamos]', err);
-        _msg('Przepraszam, mam chwilowy problem z połączeniem 😕 Spróbuj ponownie za moment lub zadzwoń do nas bezpośrednio.','bot');
-      })
-      .finally(()=>{ _busy(false); document.getElementById('ad-ta').focus(); });
+  function addNote(){const n=document.createElement('div');n.className='w-note';n.textContent=C.aiDisclosure;$('w-msgs').appendChild(n);}
+  function openWin(){open=true;shell.classList.add('expanded');shell.classList.remove('collapsed');if(!greeted){greeted=true;setTimeout(greet,reduceMotion?0:300);}setTimeout(()=>$('w-ta').focus(),reduceMotion?0:360);}
+  function closeWin(){open=false;shell.classList.remove('expanded');shell.classList.add('collapsed');}
+  function reset(){history=[];transcript=[];store.del(HIST_KEY);$('w-msgs').innerHTML='';if(C.aiDisclosure&&String(C.aiDisclosure).trim())addNote();greeted=true;greet();$('w-ta').focus();}
+  function greet(){msg(C.welcomeMessage||'Cześć! W czym mogę pomóc?','bot',false);}
+  function send(text){text=(text||'').trim();if(!text||busy)return;const ta=$('w-ta');ta.value='';ta.style.height='auto';msg(text,'usr');history.push({role:'user',parts:[{text}]});typing(true);setBusy(true);
+    fetch(BASE+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({siteId:SITE,history})})
+      .then(async r=>{let d={};try{d=await r.json();}catch(e){throw new Error('Zła odpowiedź');}if(!r.ok||d.error)throw new Error(d.error||('HTTP '+r.status));if(!d.reply)throw new Error('Pusta odpowiedź');return d.reply;})
+      .then(reply=>{history.push({role:'model',parts:[{text:reply}]});typing(false);msg(reply,'bot');})
+      .catch(err=>{typing(false);console.error('[widget]',err);errMsg('Nie udało się połączyć z asystentem. Spróbuj ponownie za chwilę.');})
+      .finally(()=>{setBusy(false);$('w-ta').focus();});
   }
-
-  /* Wywołaj backend (Cloudflare Worker) */
-  async function _callBackend(){
-    const base = (C.backendUrl||'').replace(/\/+$/,'');
-    if(!base || base.includes('WKLEJ')){
-      throw new Error('Nie ustawiono adresu backendu (backendUrl)');
-    }
-    const res = await fetch(base + '/chat', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ history, systemPrompt: C.systemPrompt || '' })
-    });
-    const data = await res.json();
-    if(!res.ok || data.error) throw new Error(data.error || ('HTTP '+res.status));
-    return data.reply;
-  }
-
-  /* Powitanie */
-  function _greet(){ _msg(C.welcome || 'Cześć! Jak mogę pomóc?', 'bot'); }
-
-  /* Dodaj bąbelek */
-  function _msg(text, role){
-    const wrap=document.getElementById('ad-msgs');
-    const div=document.createElement('div');
-    div.className='ad-msg ad-'+role;
-    div.innerHTML = role==='bot' ? _md(text) : _esc(text);
-    wrap.appendChild(div);
-    wrap.scrollTop=wrap.scrollHeight;
-  }
-
-  /* Markdown → HTML */
-  function _md(t){
-    return t
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-      .replace(/^[•\-\*] (.+)$/gm,'<li>$1</li>')
-      .replace(/(<li>[\s\S]*?<\/li>\n?)+/g,m=>`<ul>${m}</ul>`)
-      .split(/\n\n+/).map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
-  }
-  function _esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  /* Typing */
-  let _typ=null;
-  function _typing(show){
-    const wrap=document.getElementById('ad-msgs');
-    if(show){
-      _typ=document.createElement('div');
-      _typ.className='ad-typing';
-      _typ.innerHTML='<span></span><span></span><span></span>';
-      wrap.appendChild(_typ); wrap.scrollTop=wrap.scrollHeight;
-    }else{ _typ?.remove(); _typ=null; }
-  }
-  function _busy(v){ busy=v; document.getElementById('ad-send').disabled=v; }
+  function msg(text,role,persist){const w=$('w-msgs'),d=document.createElement('div');d.className='w-msg w-'+role;d.innerHTML=role==='bot'?md(text):esc(text);w.appendChild(d);w.scrollTop=w.scrollHeight;if(persist!==false&&(role==='usr'||role==='bot')){transcript.push({r:role==='usr'?'user':'bot',t:text});store.set(HIST_KEY,JSON.stringify(transcript));}}
+  function errMsg(text){const w=$('w-msgs'),d=document.createElement('div');d.className='w-err';d.textContent=text;w.appendChild(d);w.scrollTop=w.scrollHeight;}
+  function md(t){let s=esc(t);s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');s=s.replace(/^[•\-\*]\s+(.+)$/gm,'<li>$1</li>');s=s.replace(/(<li>[\s\S]*?<\/li>\s*)+/g,m=>'<ul>'+m+'</ul>');return s.split(/\n{2,}/).map(p=>p.indexOf('<ul>')>-1?p:'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');}
+  function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  let typEl=null;
+  function typing(show){const w=$('w-msgs');if(show){typEl=document.createElement('div');typEl.className='w-typing';typEl.innerHTML='<span></span><span></span><span></span>';w.appendChild(typEl);w.scrollTop=w.scrollHeight;}else if(typEl){typEl.remove();typEl=null;}}
+  function setBusy(v){busy=v;$('w-send').disabled=v;shell.classList.toggle('thinking',v);}
 })();
 </script>
+<!-- ╚════════════ WIDGET — KONIEC ════════════╝ -->
 
 </body>
 </html>
