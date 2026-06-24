@@ -125,9 +125,9 @@ html.w-left #w-shell{left:24px;right:auto;}
 <!-- ★ KONFIGURACJA — tylko dwie rzeczy ★ -->
 <script>
 window.WIDGET = {
-  siteId:     "demo",                                            // identyfikator firmy (nadaje operator)
+  siteId:     "test-firma",                                            // identyfikator firmy (nadaje operator)
   backendUrl: "https://projekta.edziopedzio1939.workers.dev",    // Twój worker
-  footer:     "powered by Twoja Firma",                          // ← ZMIEŃ TU napis w stopce
+  footer:     "powered by EKG",                          // ← ZMIEŃ TU napis w stopce
 };
 </script>
 
@@ -141,10 +141,8 @@ window.WIDGET = {
   const $ = id => document.getElementById(id);
   const reduceMotion = matchMedia('(prefers-reduced-motion:reduce)').matches;
   const shell=$('w-shell');
-  const HIST_KEY="w_hist_"+SITE, OPEN_KEY="w_autoopen_"+SITE, CID_KEY="w_cid_"+SITE;
+  const HIST_KEY="w_hist_"+SITE, OPEN_KEY="w_autoopen_"+SITE;
   const store={get(k){try{return sessionStorage.getItem(k);}catch(e){return null;}},set(k,v){try{sessionStorage.setItem(k,v);}catch(e){}},del(k){try{sessionStorage.removeItem(k);}catch(e){}}};
-  let clientId=store.get(CID_KEY); if(!clientId){clientId='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);store.set(CID_KEY,clientId);}
-  let orderSeen={}, ordersInit=false;
   function hexToRgb(h){if(!h)return null;h=String(h).replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');if(h.length!==6)return null;const n=parseInt(h,16);if(isNaN(n))return null;return [(n>>16)&255,(n>>8)&255,n&255];}
 
   // 1) pobierz publiczny wyglad, potem zbuduj UI
@@ -184,7 +182,6 @@ window.WIDGET = {
     $('w-ta').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send($('w-ta').value);}});
     $('w-ta').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,96)+'px';});
     addEventListener('keydown',e=>{if(e.key==='Escape'&&open)closeWin();});
-    pollOrders(); setInterval(pollOrders,15000);
   }
 
   function addNote(){const n=document.createElement('div');n.className='w-note';n.textContent=C.aiDisclosure;$('w-msgs').appendChild(n);}
@@ -193,35 +190,17 @@ window.WIDGET = {
   function reset(){history=[];transcript=[];store.del(HIST_KEY);$('w-msgs').innerHTML='';if(C.aiDisclosure&&String(C.aiDisclosure).trim())addNote();greeted=true;greet();$('w-ta').focus();}
   function greet(){msg(C.welcomeMessage||'Cześć! W czym mogę pomóc?','bot',false);}
   function send(text){text=(text||'').trim();if(!text||busy)return;const ta=$('w-ta');ta.value='';ta.style.height='auto';msg(text,'usr');history.push({role:'user',parts:[{text}]});typing(true);setBusy(true);
-    fetch(BASE+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({siteId:SITE,clientId,history})})
+    fetch(BASE+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({siteId:SITE,history})})
       .then(async r=>{let d={};try{d=await r.json();}catch(e){throw new Error('Zła odpowiedź');}if(!r.ok||d.error)throw new Error(d.error||('HTTP '+r.status));if(!d.reply)throw new Error('Pusta odpowiedź');return d.reply;})
       .then(reply=>{history.push({role:'model',parts:[{text:reply}]});typing(false);msg(reply,'bot');})
       .catch(err=>{typing(false);console.error('[widget]',err);errMsg('Nie udało się połączyć z asystentem. Spróbuj ponownie za chwilę.');})
-      .finally(()=>{setBusy(false);$('w-ta').focus();setTimeout(pollOrders,3000);});
+      .finally(()=>{setBusy(false);$('w-ta').focus();});
   }
   function appendBubble(text,role,editIdx){const w=$('w-msgs'),d=document.createElement('div');d.className='w-msg w-'+role;d.innerHTML=role==='bot'?md(text):esc(text);if(role==='usr'&&editIdx>=0){const e=document.createElement('button');e.className='w-edit';e.type='button';e.title='Edytuj';e.setAttribute('aria-label','Edytuj wiadomość');e.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';e.onclick=()=>editMessage(editIdx);d.appendChild(e);}w.appendChild(d);w.scrollTop=w.scrollHeight;}
   function msg(text,role,persist){let idx=-1;if(persist!==false&&(role==='usr'||role==='bot')){transcript.push({r:role==='usr'?'user':'bot',t:text});store.set(HIST_KEY,JSON.stringify(transcript));if(role==='usr')idx=transcript.length-1;}appendBubble(text,role,idx);}
   function editMessage(idx){if(busy)return;const t=(transcript[idx]&&transcript[idx].t)||'';transcript=transcript.slice(0,idx);store.set(HIST_KEY,JSON.stringify(transcript));history=transcript.map(m=>({role:m.r==='user'?'user':'model',parts:[{text:m.t}]}));rerender();const ta=$('w-ta');ta.value=t;ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,96)+'px';ta.focus();}
   function rerender(){$('w-msgs').innerHTML='';if(C.aiDisclosure&&String(C.aiDisclosure).trim())addNote();appendBubble(C.welcomeMessage||'Cześć! W czym mogę pomóc?','bot',-1);transcript.forEach((m,i)=>appendBubble(m.t,m.r==='user'?'usr':'bot',m.r==='user'?i:-1));}
   function errMsg(text){const w=$('w-msgs'),d=document.createElement('div');d.className='w-err';d.textContent=text;w.appendChild(d);w.scrollTop=w.scrollHeight;}
-  function notifyOrder(text){const w=$('w-msgs');if(!w)return;const d=document.createElement('div');d.className='w-msg w-bot';d.textContent=text;w.appendChild(d);w.scrollTop=w.scrollHeight;}
-  async function pollOrders(){
-    if(!clientId)return;
-    try{
-      const r=await fetch(BASE+'/order-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({siteId:SITE,clientId})});
-      const d=await r.json();const list=(d&&d.orders)||[];
-      list.forEach(o=>{
-        const st=o.status||'new';
-        const state=(st==='preparing'||st==='done'||st==='accepted')?'confirmed':(st==='rejected'?'rejected':'new');
-        if(!ordersInit){orderSeen[o.id]=state;return;}
-        if(orderSeen[o.id]===state)return;
-        orderSeen[o.id]=state;
-        if(state==='confirmed')notifyOrder('✅ Twoje zamówienie zostało potwierdzone przez obsługę.');
-        else if(state==='rejected')notifyOrder('❌ Niestety Twoje zamówienie nie zostało przyjęte. W razie pytań skontaktuj się z lokalem.');
-      });
-      ordersInit=true;
-    }catch(e){}
-  }
   function md(t){let s=esc(t);s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');s=s.replace(/^[•\-\*]\s+(.+)$/gm,'<li>$1</li>');s=s.replace(/(<li>[\s\S]*?<\/li>\s*)+/g,m=>'<ul>'+m+'</ul>');return s.split(/\n{2,}/).map(p=>p.indexOf('<ul>')>-1?p:'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');}
   function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   let typEl=null;
