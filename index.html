@@ -125,7 +125,7 @@ html.w-left #w-shell{left:24px;right:auto;}
 <!-- ★ KONFIGURACJA — tylko dwie rzeczy ★ -->
 <script>
 window.WIDGET = {
-  siteId:     "test-firma",                                            // identyfikator firmy (nadaje operator)
+  siteId:     "demo",                                            // identyfikator firmy (nadaje operator)
   backendUrl: "https://projekta.edziopedzio1939.workers.dev",    // Twój worker
   footer:     "powered by Twoja Firma",                          // ← ZMIEŃ TU napis w stopce
 };
@@ -204,7 +204,7 @@ window.WIDGET = {
   function editMessage(idx){if(busy)return;const t=(transcript[idx]&&transcript[idx].t)||'';transcript=transcript.slice(0,idx);store.set(HIST_KEY,JSON.stringify(transcript));history=transcript.map(m=>({role:m.r==='user'?'user':'model',parts:[{text:m.t}]}));rerender();const ta=$('w-ta');ta.value=t;ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,96)+'px';ta.focus();}
   function rerender(){$('w-msgs').innerHTML='';if(C.aiDisclosure&&String(C.aiDisclosure).trim())addNote();appendBubble(C.welcomeMessage||'Cześć! W czym mogę pomóc?','bot',-1);transcript.forEach((m,i)=>appendBubble(m.t,m.r==='user'?'usr':'bot',m.r==='user'?i:-1));}
   function errMsg(text){const w=$('w-msgs'),d=document.createElement('div');d.className='w-err';d.textContent=text;w.appendChild(d);w.scrollTop=w.scrollHeight;}
-  function notifyOrder(text){const w=$('w-msgs');if(!w)return;const d=document.createElement('div');d.className='w-msg w-bot';d.textContent=text;w.appendChild(d);w.scrollTop=w.scrollHeight;}
+  function notifyOrder(text){const w=$('w-msgs');if(!w)return;const d=document.createElement('div');d.className='w-msg w-bot';d.innerHTML='<strong>'+esc(text)+'</strong>';w.appendChild(d);w.scrollTop=w.scrollHeight;history.push({role:'model',parts:[{text:text}]});}
   async function pollOrders(){
     if(!clientId)return;
     try{
@@ -224,7 +224,7 @@ window.WIDGET = {
   }
   function md(t){let s=esc(t);s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');s=s.replace(/^[•\-\*]\s+(.+)$/gm,'<li>$1</li>');s=s.replace(/(<li>[\s\S]*?<\/li>\s*)+/g,m=>'<ul>'+m+'</ul>');return s.split(/\n{2,}/).map(p=>p.indexOf('<ul>')>-1?p:'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');}
   function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-  let typEl=null
+  let typEl=null;
   function typing(show){const w=$('w-msgs');if(show){typEl=document.createElement('div');typEl.className='w-typing';typEl.innerHTML='<span></span><span></span><span></span>';w.appendChild(typEl);w.scrollTop=w.scrollHeight;}else if(typEl){typEl.remove();typEl=null;}}
   function setBusy(v){busy=v;$('w-send').disabled=v;shell.classList.toggle('thinking',v);}
 })();
