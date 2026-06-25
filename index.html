@@ -29,7 +29,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#EEF1F
   --w-accent:#D4AF37; --w-accent-rgb:212,175,55;
   --w-bg:#FFFFFF; --w-bg-soft:#F1F3F8; --w-bot-bubble:#EDEFF4;
   --w-text:#16203A; --w-border:#DCE2EC;
-  --w-bot-text:#16203A; --w-usr-text:#FFFFFF; --w-status:rgba(255,255,255,.78);
+  --w-bot-text:#16203A; --w-usr-text:#FFFFFF; --w-status:rgba(255,255,255,.78); --w-name:#FFFFFF;
 }
 #w-shell,#w-shell *{box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;}
 #w-shell{position:fixed;bottom:24px;right:24px;width:66px;height:66px;border-radius:50%;background:var(--w-bg);overflow:hidden;z-index:2147483000;transition:width .44s cubic-bezier(.34,1.28,.5,1),height .44s cubic-bezier(.34,1.28,.5,1),border-radius .4s ease,box-shadow .4s ease;}
@@ -54,7 +54,7 @@ html.w-left #w-shell{left:24px;right:auto;}
 #w-shell.thinking .w-head-av{animation-duration:.9s;}
 @keyframes wAvPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0);}50%{box-shadow:0 0 0 5px rgba(255,255,255,.5);}}
 .w-head-info{flex:1;min-width:0;}
-.w-head-name{font-size:15px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.w-head-name{font-size:15px;font-weight:600;color:var(--w-name);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .w-head-status{font-size:11px;color:var(--w-status);margin-top:2px;display:flex;align-items:center;gap:5px;}
 .w-sdot{width:7px;height:7px;border-radius:50%;background:var(--w-accent);flex-shrink:0;}
 .w-head-btn{background:none;border:none;cursor:pointer;padding:5px;border-radius:7px;color:rgba(255,255,255,.62);display:flex;transition:color .15s,background .15s;flex-shrink:0;}
@@ -165,6 +165,7 @@ window.WIDGET = {
     if(C.botTextColor)root.setProperty('--w-bot-text',C.botTextColor);
     if(C.userTextColor)root.setProperty('--w-usr-text',C.userTextColor);
     if(C.statusTextColor)root.setProperty('--w-status',C.statusTextColor);
+    if(C.nameTextColor)root.setProperty('--w-name',C.nameTextColor);
     if((C.position||'right')==='left')document.documentElement.classList.add('w-left');
     $('w-name').textContent=C.botName||'Asystent';
     $('w-status').textContent=C.statusText||'Online';
