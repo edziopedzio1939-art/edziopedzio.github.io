@@ -125,7 +125,7 @@ html.w-left #w-shell{left:24px;right:auto;}
 <!-- ★ KONFIGURACJA — tylko dwie rzeczy ★ -->
 <script>
 window.WIDGET = {
-  siteId:     "test-firma",                                            // identyfikator firmy (nadaje operator)
+  siteId:     "demo",                                            // identyfikator firmy (nadaje operator)
   backendUrl: "https://projekta.edziopedzio1939.workers.dev",    // Twój worker
   footer:     "powered by Twoja Firma",                          // ← ZMIEŃ TU napis w stopce
 };
@@ -135,8 +135,9 @@ window.WIDGET = {
 <script>
 (function(){
   const W = window.WIDGET || {};
-  const BASE = (W.backendUrl||'').replace(/\/+$/,'');
-  const SITE = W.siteId||'';
+  const Q = new URLSearchParams(location.search);
+  const BASE = ((W.backendUrl||'https://projekta.edziopedzio1939.workers.dev')).replace(/\/+$/,'');
+  const SITE = W.siteId || Q.get('site') || '';
   let open=false, busy=false, greeted=false, history=[], transcript=[], C={};
   const $ = id => document.getElementById(id);
   const reduceMotion = matchMedia('(prefers-reduced-motion:reduce)').matches;
